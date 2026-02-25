@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Models (too large for git)
+*.pt
+*.pth
+*.onnx
+*.engine
+models/*.pt
+
+# Environment
+.env
+venv/
+env/
+.conda/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Output data (user-generated)
+output/
+labeled_dataset/
+runs/
+output_frames/
+
+# Config (user-specific)
+sam3_config.json
+sam3_progress.json
+
+# Temporary
+*.tmp
+*.log
