@@ -1,320 +1,287 @@
-# SAM 3 Labeling Tool - Complete User Manual
+# SAM3 Labeler (PyQt6) — User Manual
 
-## For Beginners
+## Introduction
 
-Welcome to the SAM 3 Labeling Tool! This software helps you mark objects in images.
+Welcome to SAM3 Labeler PyQt6 edition! This desktop application helps you annotate objects in images. Compared to the original Gradio web version, the PyQt6 version offers millisecond-level interaction, native zoom/pan, real-time hover highlights, and non-blocking SAM inference.
 
-**What is "labeling"?**
-Imagine using a highlighter to circle important things in a photo and writing what they are. That's labeling! Computers need these labels to learn how to recognize objects.
+> **Also available in:** [繁體中文](USER_MANUAL_zh-TW.md)
 
 **What can this tool do?**
-- Select or click on objects in images
-- Automatically identify object boundaries (using AI)
-- Save annotation data for computer learning
+
+- Annotate objects using three methods: click, box-select, or text prompt
+- Auto-detect object boundaries via Meta SAM 3
+- Export in OBB / YOLO-Seg / PNG Mask / COCO JSON simultaneously
+- Zoom with scroll wheel, pan with right-click drag — ideal for high-res images
 
 ---
 
-## Chapter 1: Understanding the Interface
+## Chapter 1: Installation
 
-After starting the program, your browser will open automatically. You'll see:
+### 1.1 System Requirements
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  SAM3    [Images Folder]    [Output Folder]    [Load] [Jump]        │  ← Navigation
-├────────┬───────────────────────────────────────┬────────────────────┤
-│        │                                       │                    │
-│ Tool   │                                       │    Control Panel   │
-│ Panel  │         Image Display Area            │                    │
-│        │                                       │    - Text Segment  │
-│ ○Select│    ←  [    Image    ]  →              │    - Class Select  │
-│ ○Click │                                       │    - Output Format │
-│ ○Box   │                                       │    - Label Manage  │
-│        │                                       │                    │
-├────────┴───────────────────────────────────────┴────────────────────┤
-│  Status Bar: Shows current progress and operation messages          │
-└─────────────────────────────────────────────────────────────────────┘
-```
+| Item | Minimum | Recommended |
+|------|---------|-------------|
+| OS | Windows 10 / Ubuntu 20.04 | Windows 11 / Ubuntu 22.04 |
+| Python | 3.10 | 3.12 |
+| GPU | NVIDIA GTX 1060 (6GB) | NVIDIA RTX 3060+ (8GB+) |
+| CUDA | 11.7 | 12.1+ |
+| RAM | 8 GB | 16 GB+ |
+| Disk | 5 GB (incl. model) | 10 GB+ |
 
-### 1.1 Navigation Bar (Top)
+### 1.2 Installation
 
-| Component | Description | How to Use |
-|-----------|-------------|------------|
-| **SAM3** | Program name | Just a title, no need to click |
-| **Images Folder** | Tell program where your images are | Enter folder path, e.g., `D:\my_images` |
-| **Output Folder** | Where to save annotation results | Enter folder path, e.g., `D:\labels` |
-| **Load** | Start reading images | Click after setting paths |
-| **Jump** | Jump to specific image number | Enter number, e.g., `50`, then press Enter |
+```bash
+# 1. Install PyTorch (choose your CUDA version)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 
-### 1.2 Tool Panel (Left)
-
-Three tools available, only one active at a time:
-
-```
-┌──────────────┐
-│  Tools       │
-├──────────────┤
-│ ● Select Labels │  ← Select existing labels
-│ ○ Click Segment │  ← Click to auto-segment
-│ ○ Box Segment   │  ← Draw box to segment
-└──────────────┘
+# 2. Install dependencies
+pip install PyQt6 opencv-python numpy ultralytics
 ```
 
-**Select Labels** - Use when you want to modify or delete existing labels
-**Click Segment** - Easiest! Just click object center, AI will auto-segment
-**Box Segment** - Draw a box around object, AI will identify boundaries
+### 1.3 Download SAM 3 Model
 
----
+`sam3.pt` (~3.4 GB) is not included. Download from [Hugging Face](https://huggingface.co/facebook/sam3) (requires Meta approval).
 
-## Chapter 2: Getting Started (Quick Guide)
+### 1.4 Launch
 
-### Step 1: Prepare Images
-
-First, put images to label in a folder.
-
-**Recommendation:**
-1. Create a folder, e.g., `D:\images_to_label`
-2. Copy all images there
-3. Image formats: `.jpg`, `.png`, `.jpeg`, `.bmp`
-
-### Step 2: Launch Program
-
-Open Command Prompt (Press Win+R, type `cmd`, press Enter)
-
-Enter:
-```
-cd sam3_labeler_package
-python sam3_labeler.py
+```bash
+python main.py
+python main.py --model /path/to/sam3.pt
+python main.py --model sam3.pt --images ./images --output ./output
 ```
 
-Wait a few seconds, browser will open automatically.
-
-**If it doesn't open automatically:** Open browser manually, enter `http://localhost:7860`
-
-### Step 3: Load Images
-
-1. In "Images Folder" field, enter your images path
-   ```
-   D:\images_to_label
-   ```
-
-2. In "Output Folder" field, enter where to save results
-   ```
-   D:\my_labels
-   ```
-
-3. Click "Load" button
-
-4. If successful, you'll see the first image!
-
-### Step 4: Start Labeling
-
-Easiest method - "Click Segment":
-
-1. Select "Click Segment" in left tool panel
-2. Confirm "Current Class" on right is what you want
-3. Click on center of object in image
-4. AI will automatically identify and outline object!
-
-**Colored box appearing means success!**
-
-### Step 5: Next Image
-
-Click → arrow on right side of image, or press → arrow key
-
-**Important: Labels auto-save when switching images!**
-
 ---
 
-## Chapter 3: Three Labeling Methods Explained
-
-### Method 1: Click Segment (Easiest)
-
-**Best for:** Obvious objects with clear boundaries
-
-**Steps:**
-1. Select "Click Segment" tool
-2. Select correct class
-3. Click center of object
-4. Done!
-
-**Tip:** Click as close to center of object as possible
-
-### Method 2: Box Segment (More Precise)
-
-**Best for:** Overlapping objects, when AI makes mistakes
-
-**Steps:**
-1. Select "Box Segment" tool
-2. Select correct class
-3. Click top-left corner of object → screen shows marker
-4. Click bottom-right corner of object → AI starts identifying
-
-**Tip:** Box should contain entire object, stay close to edges
-
-### Method 3: Text Segment (Auto-find Objects)
-
-**Best for:** Finding all specific objects at once
-
-**Steps:**
-1. In "Text Prompt" field, enter object name
-   - Single object: `bottle`
-   - Multiple: `bottle, debris, buoy` (comma separated)
-2. Click "Segment by Text"
-3. AI will find all matching objects!
-
-**Note:** Text entered automatically becomes a new class
-
----
-
-## Chapter 4: Editing Existing Labels
-
-### 4.1 Selecting Labels
-
-1. Switch to "Select Labels" tool
-2. Click label box on image
-3. Selected labels show yellow thick border
-
-**Multi-select:** Click each one to add to selection
-
-### 4.2 Deleting Labels
-
-1. Select labels to delete (can multi-select)
-2. Click "Delete Selected" button on right
-3. Labels disappear!
-
-### 4.3 Changing Class
-
-If you accidentally labeled a "bottle" as "debris":
-
-1. Select that label
-2. Choose correct class from dropdown on right
-3. Click "Apply" button
-4. Done!
-
----
-
-## Chapter 5: Auto-Save Feature
-
-Good news! This program auto-saves your labels:
-- When switching to next image → auto-saves
-- When switching to previous image → auto-saves
-
-**You don't need to manually save!**
-
----
-
-## Chapter 6: Output Files Explained
-
-Program generates these files:
+## Chapter 2: Interface Overview
 
 ```
-D:\my_labels\
-├── images\              ← Labeled image copies
-│   ├── image001.jpg
-│   └── image002.jpg
-│
-├── labels\              ← OBB format labels
-│   ├── image001.txt
-│   └── image002.txt
-│
-├── labels_seg\          ← Polygon format labels
-│   ├── image001.txt
-│   └── image002.txt
-│
-├── masks\               ← Mask images (if enabled)
-│   ├── image001.png
-│   └── image002.png
-│
-└── classes.txt          ← All class names
+┌─────────────────────────────────────────────────────────────────────────┐
+│  SAM3  [Image Folder] [📁] [Output Folder]  [Load] │ [N] [Go]  7/13   │ ← Navigation
+├────────┬──────────────────────────────────────┬──────────────────────────┤
+│        │                                      │                          │
+│ Tools  │                                      │  Text Prompt             │
+│        │                                      │  [input] [▶ Run]         │
+│ ○ Click│                                      │                          │
+│ ○ Box  │          Canvas                      │  Class                   │
+│ ○ Select│                                     │  [dropdown] [+] [−]      │
+│        │     (scroll zoom / right-click pan)  │                          │
+│        │     (coords at bottom-left)          │  Settings                │
+│ [⊞ Fit]│                                      │  ☑ Fallback to box      │
+│ [◀Prev]│                                      │  ○outline ○mask ○both   │
+│ [Next▶]│                                      │  Simplify ─●── 0.005    │
+│        │                                      │  Overlap  ──●─ 10%      │
+│        │                                      │                          │
+│        │                                      │  Output Formats          │
+│        │                                      │  ☑OBB ☑Seg ☐Mask ☐COCO │
+│        │                                      │                          │
+│        │                                      │  Annotation List         │
+│        │                                      │  ■ 1. plastic_bottle    │
+│        │                                      │  ■ 2. foam (selected)   │
+│        │                                      │                          │
+│        │                                      │  [Class▼] [Apply]        │
+│        │                                      │  [🗑Delete] [Clear All]  │
+│        │                                      │  [💾 Save]              │
+├────────┴──────────────────────────────────────┴──────────────────────────┤
+│ 📷 7/13  🏷️ 5 annotations  |  frame_006.jpg                            │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-| Format | Location | Purpose |
-|--------|----------|---------|
-| OBB | labels/*.txt | For YOLO OBB model training (rotated boxes) |
-| Seg | labels_seg/*.txt | For YOLO-Seg model training (instance segmentation) |
-| Mask | masks/*.png | For semantic segmentation or mask creation |
+### 2.1 Navigation Bar (Top)
 
-**Beginner tip:** Keep default OBB and Seg checked!
+| Element | Description |
+|---------|-------------|
+| **Image Folder** | Path to images, type or browse with 📁 |
+| **Output Folder** | Where annotations are saved |
+| **Load** | Load images and resume from last position |
+| **N / Go** | Jump to image number |
 
----
+### 2.2 Tool Panel (Left)
 
-## Chapter 7: Frequently Asked Questions
+| Tool | Shortcut | Cursor | Description |
+|------|----------|--------|-------------|
+| 🖱️ Click | `1` | Crosshair | Click object center, SAM auto-segments |
+| ⬜ Box | `2` | Crosshair | Drag rectangle, SAM segments inside |
+| ✋ Select | `3` | Arrow | Click/drag to select existing annotations |
 
-### Q1: Clicked object but nothing happened?
+### 2.3 Canvas (Center)
 
-**Possible causes:**
-- Wrong tool selected → Confirm "Click Segment" is selected
-- AI can't recognize → Try "Box Segment" instead
+| Action | Effect |
+|--------|--------|
+| Scroll up/down | Zoom in/out (centered on cursor) |
+| Right-click drag | Pan |
+| Space + left-click drag | Pan |
+| Middle-click drag | Pan |
+| Double-click | Fit to window |
+| Press `F` | Fit to window |
+| Click ⊞ Fit button | Fit to window |
 
-**Solution:**
-1. Check "Use Box if SAM Fails" on right
-2. This creates box annotation even if AI fails
+**Visual elements:**
+- Colored outlines per class
+- Labels with dark background
+- Coordinates at bottom-left
+- Dashed outline on hover
+- Cyan highlight on selection
+- Semi-transparent overlay during SAM inference
 
-### Q2: Label shape is wrong?
+### 2.4 Control Panel (Right, scrollable)
 
-**Solution:**
-1. Delete wrong label
-2. Use "Box Segment" for more precise selection
-3. Or try clicking different positions
+#### Text Prompt
+Enter object names (comma-separated), press Enter. SAM 3 finds all matching objects. Names auto-add as classes.
 
-### Q3: Forgot to select class before labeling?
+#### Class Management
+- **Dropdown**: Select active class for annotation
+- **+ button**: Add new class
+- **− button**: Delete unused class
 
-**Solution:**
-1. Select that label
-2. Choose correct class
-3. Click "Apply"
+#### Settings
 
-### Q4: Program crashed, are labels lost?
+| Setting | Description |
+|---------|-------------|
+| Fallback to box | If SAM fails, create manual box annotation |
+| Display mode | Outline / Mask / Both |
+| Polygon simplify | Slider 0.001~0.020, lower = more precise |
+| Overlap threshold | Slider 0%~50%, 0% = allow overlap |
 
-**Don't worry!**
-- As long as you switched images before, previous labels are saved
-- Restart program, load same folder to continue
+#### Output Formats
 
----
+| Format | Default | Description |
+|--------|---------|-------------|
+| OBB | ☑ | `labels/*.txt` — YOLO OBB training |
+| YOLO-Seg | ☑ | `labels_seg/*.txt` — instance segmentation |
+| PNG Mask | ☐ | `masks/*.png` — semantic segmentation |
+| COCO JSON | ☐ | `coco_annotations.json` — COCO format |
 
-## Chapter 8: Good Labeling Habits
-
-### 1. Label Completely
-Make sure entire object is inside the box
-
-### 2. Label Tightly
-Keep box close to object, don't leave too much space
-
-### 3. One Object Per Label
-Label each object separately, don't put multiple objects in one label
-
-### 4. Be Consistent
-Same objects should always use same class name
-
-### 5. Backup Regularly
-Every 50-100 images, backup your output folder
-
----
-
-## Chapter 9: Keyboard Shortcuts
-
-| Key | Function |
-|-----|----------|
-| ← (Left Arrow) | Previous image |
-| → (Right Arrow) | Next image |
-| Delete | Delete selected labels |
-| Escape | Cancel selection |
+#### Annotation List
+- Color square per annotation matching class color
+- Multi-select with Ctrl+click or Shift+click
+- Apply class, delete, or clear all
 
 ---
 
-## Glossary
+## Chapter 3: Quick Start
 
-| Term | Explanation |
-|------|-------------|
-| **Annotation/Labeling** | Marking object location and class on images |
-| **Class** | Type of object, e.g., "bottle", "boat" |
-| **OBB** | Oriented Bounding Box, rotated rectangle |
-| **Seg** | Segmentation, precise object boundary |
-| **Mask** | Black and white image showing object position |
-| **SAM** | Segment Anything Model, AI segmentation by Meta |
-| **AI** | Artificial Intelligence |
-| **GPU** | Graphics card, accelerates AI computing |
+1. **Launch**: `python main.py --model sam3.pt`
+2. **Load images**: Enter folder paths, click Load
+3. **Annotate**: Select class, click on objects (mode `1`)
+4. **Next image**: Press `→` (auto-saves)
+5. **Edit**: Press `3` to select, `Delete` to remove, apply class to fix mistakes
 
 ---
 
-Happy labeling!
+## Chapter 4: Three Annotation Methods
+
+### Method 1: Click Segmentation
+Best for clear, distinct objects. Press `1`, click object center.
+
+### Method 2: Box Selection
+Best for overlapping objects. Press `2`, drag a rectangle around the object.
+
+### Method 3: Text Prompt
+Best for batch annotation. Type object names in the text field, press Enter. SAM 3 finds all matches automatically. UI stays responsive during inference.
+
+---
+
+## Chapter 5: Editing Annotations
+
+### Select
+- Switch to Select tool (`3`)
+- Click annotation to toggle selection
+- Ctrl+click for multi-select
+- Drag in empty area to box-select
+- `Ctrl+A` to select all, `Esc` to deselect
+
+### Delete
+Select annotations, press `Delete` or click 🗑
+
+### Change Class
+Select annotations, choose class from dropdown, click "Apply Class"
+
+---
+
+## Chapter 6: Zoom & Navigation
+
+| Action | Effect |
+|--------|--------|
+| Scroll up | Zoom in 12% |
+| Scroll down | Zoom out 12% |
+| Right-click drag | Pan |
+| Space + left-click drag | Pan |
+| Middle-click drag | Pan |
+| `F` / Double-click / ⊞ button | Fit to window |
+
+Zoom range: 5% ~ 3000%
+
+---
+
+## Chapter 7: Save & Output
+
+### Auto-save
+Switching images (← → keys, buttons, jump) triggers auto-save.
+
+### Manual save
+`Ctrl+S` or click 💾
+
+### Output Structure
+
+```
+output_folder/
+├── images/              ← Annotated image copies
+├── labels/              ← OBB format (class x1 y1 x2 y2 x3 y3 x4 y4)
+├── labels_seg/          ← YOLO-Seg polygon format
+├── masks/               ← PNG masks (if enabled)
+├── coco_annotations.json← COCO JSON (if enabled)
+└── classes.txt          ← Class list
+```
+
+---
+
+## Chapter 8: Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `←` | Previous image (auto-save) |
+| `→` | Next image (auto-save) |
+| `1` | Click mode |
+| `2` | Box mode |
+| `3` | Select mode |
+| `Delete` | Delete selected |
+| `Ctrl+S` | Save |
+| `Ctrl+A` | Select all |
+| `Esc` | Deselect all |
+| `F` | Fit to window |
+| `Enter` (text field) | Run text segmentation |
+| `Enter` (jump field) | Jump to image |
+| Scroll wheel | Zoom |
+| Right-click drag | Pan |
+| Space + left-click drag | Pan |
+| Middle-click drag | Pan |
+| Double-click | Fit to window |
+
+---
+
+## Chapter 9: FAQ
+
+**Q: Click does nothing?**
+Check tool is set to Click (`1`). Verify cursor is within image (coords shown at bottom-left). Try Box mode or enable "Fallback to box".
+
+**Q: SAM inference takes long?**
+First inference loads the model (10-30s). Subsequent runs take 1-3s. UI remains responsive.
+
+**Q: Wrong class assigned?**
+Press `3`, click the annotation, select correct class, click "Apply Class".
+
+**Q: Lost annotations after crash?**
+If you switched images at least once, previous annotations are saved. Reload the same folder to continue.
+
+---
+
+## Chapter 10: Glossary
+
+| Term | Definition |
+|------|------------|
+| **OBB** | Oriented Bounding Box — rotated rectangle with 4 vertices |
+| **Seg** | Segmentation — polygon vertices defining precise boundary |
+| **Mask** | Binary image (0=background, 255=object) |
+| **COCO** | Common Objects in Context — standard JSON annotation format |
+| **SAM** | Segment Anything Model by Meta |
+| **QPainter** | Qt framework's rendering engine for vector graphics |
