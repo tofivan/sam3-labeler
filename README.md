@@ -1,287 +1,113 @@
-# SAM3 Labeler - Interactive Annotation Tool
+# SAM3 Labeler
 
-**SAM3 Labeler** is a web-based interactive annotation tool powered by [SAM 3 (Segment Anything Model)](https://github.com/ultralytics/ultralytics). It provides an intuitive interface for creating high-quality image annotations in multiple formats for object detection and segmentation tasks.
+Interactive annotation tool powered by Meta SAM 3 — click, box-select, or text-prompt to segment objects, then export in OBB / YOLO-Seg / PNG Mask / COCO JSON formats.
 
-[中文使用手冊](docs/USER_MANUAL_zh-TW.md) | [English User Manual](docs/USER_MANUAL_en.md)
+> **v1 (Gradio)** is available at tag [`v1.0`](../../tree/v1.0).
+> **v2 (PyQt6)** is the current version — a full desktop rewrite with real-time rendering.
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│  SAM3    [Image Folder]      [Output Folder]     [Load] [Jump]  │
-├────────┬────────────────────────────────┬────────────────────────┤
-│        │                                │                        │
-│  Tool  │                                │    Control Panel       │
-│  Panel │      Image Display Area        │                        │
-│        │                                │    - Text Segment      │
-│ ○ Select│   ←  [   Image   ]  →        │    - Class Selection   │
-│ ○ Click │                               │    - Output Settings   │
-│ ○ Box   │                               │    - Overlap Control   │
-│        │                                │                        │
-├────────┴────────────────────────────────┴────────────────────────┤
-│  Label List                              [Delete] [Delete All]   │
-└──────────────────────────────────────────────────────────────────┘
+## Installation
+
+```bash
+# 1. Install PyTorch (match your CUDA version)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+
+# 2. Install dependencies
+pip install PyQt6 opencv-python numpy ultralytics
 ```
 
-## Features
+### SAM 3 Model
 
-- **3 Segmentation Methods** - Point click, box selection, and text prompt
-- **AI-Powered** - SAM 3 automatically generates precise segmentation masks
-- **Multi-Format Output** - YOLO OBB, YOLO-Seg, PNG Mask, COCO JSON
-- **Overlap Prevention** - Configurable annotation overlap detection
-- **Batch Navigation** - Browse and annotate large image datasets efficiently
-- **Auto-Save** - Annotations are saved automatically when navigating between images
-- **Dynamic Classes** - Add/remove annotation classes on the fly
-- **Dark Theme** - Eye-friendly web interface built with Gradio
+Download `sam3.pt` (~3.4 GB) from [Hugging Face](https://huggingface.co/facebook/sam3) (requires Meta approval).
 
 ## Quick Start
 
-### 1. Install Dependencies
-
-**Prerequisites**: Python 3.8+, NVIDIA GPU with CUDA (recommended)
-
 ```bash
-# Install PyTorch first (choose your CUDA version)
-# Visit https://pytorch.org/get-started/locally/ for the correct command
-# Example for CUDA 12.1:
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
-# Install other dependencies
-pip install -r requirements.txt
+python main.py --model /path/to/sam3.pt
+python main.py --model sam3.pt --images ./images --output ./output
 ```
 
-### 2. Download SAM 3 Model
+## Three Annotation Modes
 
-The SAM 3 model file (`sam3.pt`, ~3.4 GB) is **not included** in this repository. You must **manually download** it from Hugging Face.
+| Mode | Shortcut | Description |
+|------|----------|-------------|
+| Click | `1` | Click object center, SAM auto-segments |
+| Box Select | `2` | Drag a rectangle, SAM segments within |
+| Text Prompt | — | Type object name, SAM finds all matches |
 
-**Download Steps**:
+## Four Output Formats
 
-1. Visit the [SAM 3 model page on Hugging Face](https://huggingface.co/facebook/sam3)
-2. **Request access** (approval required by Meta)
-3. Once approved, download `sam3.pt`:
-   - Direct link: https://huggingface.co/facebook/sam3/resolve/main/sam3.pt?download=true
-4. Place `sam3.pt` in the **project root directory** (same folder as `sam3_labeler.py`)
+| Format | Path | Usage |
+|--------|------|-------|
+| OBB | `labels/*.txt` | YOLO OBB training |
+| YOLO-Seg | `labels_seg/*.txt` | Instance segmentation |
+| PNG Mask | `masks/*.png` | Semantic segmentation |
+| COCO JSON | `coco_annotations.json` | COCO-format training |
 
-| Model | Size | Source |
-|-------|------|--------|
-| `sam3.pt` | ~3.4 GB | [Hugging Face - facebook/sam3](https://huggingface.co/facebook/sam3) |
+## Keyboard Shortcuts
 
-> **Alternative**: You can also use SAM 2 models which do **not** require access approval:
->
-> | Model | Size | Source |
-> |-------|------|--------|
-> | `sam2_t.pt` | ~150 MB | Auto-download via Ultralytics |
-> | `sam2_s.pt` | ~180 MB | Auto-download via Ultralytics |
-> | `sam2_b.pt` | ~350 MB | Auto-download via Ultralytics |
-> | `sam2_l.pt` | ~900 MB | Auto-download via Ultralytics |
->
-> SAM 2 models are downloaded automatically on first use. See [Ultralytics SAM 2 Docs](https://docs.ultralytics.com/models/sam-2/).
+| Key | Action |
+|-----|--------|
+| `←` `→` | Previous / Next image (auto-save) |
+| `1` `2` `3` | Switch mode: Click / Box / Select |
+| `Delete` | Delete selected annotations |
+| `Ctrl+S` | Save |
+| `Ctrl+A` | Select all |
+| `Esc` | Deselect |
+| `F` | Fit to window |
+| Scroll wheel | Zoom (centered on cursor) |
+| Right-click drag | Pan |
+| Space + left-click drag | Pan |
+| Middle-click drag | Pan |
+| Double-click | Fit to window |
 
-**Reference**:
-- [Ultralytics SAM 3 Docs](https://docs.ultralytics.com/models/sam-3/)
-- [Ultralytics SAM 2 Docs](https://docs.ultralytics.com/models/sam-2/)
-- [Ultralytics SAM (Original) Docs](https://docs.ultralytics.com/models/sam/)
+## v2 Highlights (vs v1 Gradio)
 
-### 3. Run
+### Performance
 
-```bash
-python sam3_labeler.py
-```
+| Action | Gradio (v1) | PyQt6 (v2) |
+|--------|-------------|------------|
+| Click → redraw | 300-500 ms | < 5 ms |
+| Hover highlight | Not supported | < 3 ms |
+| Box drag | No feedback | Real-time |
+| SAM inference | UI freezes | Background thread |
+| Zoom / Pan | Not supported | Scroll + drag |
 
-The web interface will open in your browser at `http://localhost:7860`.
-
-**With command-line arguments:**
-```bash
-# Specify image folder
-python sam3_labeler.py --images /path/to/images
-
-# Specify output folder
-python sam3_labeler.py --output /path/to/output
-```
+### New Features
+- QPainter vector rendering (replaces server-side image encoding)
+- Right-click / Space+click / Middle-click pan for laptops
+- Fit-to-window button + `F` key
+- Output format checkboxes (OBB / Seg / Mask / COCO)
+- Polygon simplification slider (0.001~0.020)
+- Overlap threshold slider (0%~50%)
+- Class delete button, color indicators in annotation list
+- Dark sci-fi theme, scrollable sidebar
 
 ## Project Structure
 
 ```
 sam3-labeler/
-├── sam3_labeler.py          # Main application
-├── sam3_classes.txt          # Class definitions (editable)
-├── requirements.txt          # Python dependencies
-├── LICENSE                   # MIT License
-│
-├── sample_images/            # Sample images for testing
-│   └── frame_000000.jpg ...
-│
-├── sample_output/            # Example annotation output
-│   ├── labels/               # YOLO OBB format labels
-│   └── classes.txt
-│
-├── scripts/                  # Utility scripts
-│   ├── extract_frames.py     # Extract frames from video
-│   ├── auto_label_obb.py     # Auto-label with SAM 3 text prompts
-│   ├── prepare_dataset.py    # Split dataset (train/val)
-│   ├── train_yolo_obb.py     # Train YOLO OBB model
-│   └── predict_obb.py        # Run inference with trained model
-│
-└── docs/                     # Documentation
-    ├── USER_MANUAL_zh-TW.md  # Detailed manual (Traditional Chinese)
-    └── USER_MANUAL_en.md     # Detailed manual (English)
+├── main.py              # Entry point
+├── requirements.txt
+├── docs/
+│   └── USER_MANUAL_zh-TW.md
+├── core/
+│   ├── state.py         # LabelingState
+│   ├── utils.py         # Coordinate transforms, overlap detection
+│   ├── io_manager.py    # Config, progress, label I/O
+│   └── sam_engine.py    # SAM 3 model wrapper
+└── ui/
+    ├── canvas.py        # QPainter vector canvas
+    └── main_window.py   # Main window + control panels
 ```
 
-## Output Formats
+## Documentation
 
-SAM3 Labeler supports 4 output formats simultaneously:
-
-### YOLO OBB (Oriented Bounding Box)
-```
-output/labels/image_name.txt
-# class_id x1 y1 x2 y2 x3 y3 x4 y4 (normalized coordinates)
-0 0.512 0.234 0.612 0.234 0.612 0.456 0.512 0.456
-```
-
-### YOLO-Seg (Polygon Segmentation)
-```
-output/labels_seg/image_name.txt
-# class_id x1 y1 x2 y2 ... xn yn (normalized polygon coordinates)
-0 0.512 0.234 0.534 0.245 0.556 0.267 ...
-```
-
-### PNG Mask
-```
-output/masks/image_name_label_0.png
-# Binary mask image (0 = background, 255 = object)
-```
-
-### COCO JSON
-```
-output/coco_annotations.json
-# Standard COCO format with polygon annotations
-```
-
-## Utility Scripts
-
-### Extract Frames from Video
-```bash
-# Extract 1 frame per second from a video
-python scripts/extract_frames.py video.mp4 -o frames -m seconds -i 1
-
-# Process all videos in a folder recursively
-python scripts/extract_frames.py /path/to/videos -o frames -m seconds -i 1 --recursive
-
-# View video info only
-python scripts/extract_frames.py /path/to/videos --info
-```
-
-### Auto-Label with Text Prompts
-```bash
-# Automatically label objects using SAM 3 text segmentation
-python scripts/auto_label_obb.py -i images_folder -o output_folder -t "trash,boat,diver"
-```
-
-### Prepare Dataset for Training
-```bash
-# Split labeled data into train/val sets (80/20)
-python scripts/prepare_dataset.py --input labeled_dataset --output yolo_dataset --split 0.8
-```
-
-### Train YOLO OBB Model
-```bash
-python scripts/train_yolo_obb.py --epochs 100 --batch 8 --model yolov8n-obb.pt
-```
-
-### Run Inference
-```bash
-# Detect objects in images
-python scripts/predict_obb.py --source images_folder/
-
-# Detect in video
-python scripts/predict_obb.py --source video.mp4
-```
-
-## Complete Workflow
-
-```
-                    ┌─────────────────┐
-                    │   Video Files   │
-                    │  (MP4/AVI/MOV)  │
-                    └────────┬────────┘
-                             │
-                    extract_frames.py
-                             │
-                    ┌────────▼────────┐
-                    │  Image Frames   │
-                    └────────┬────────┘
-                             │
-                    sam3_labeler.py        ← Interactive annotation
-                             │
-                    ┌────────▼────────┐
-                    │  Labeled Data   │
-                    │  (OBB/Seg/Mask) │
-                    └────────┬────────┘
-                             │
-                    prepare_dataset.py
-                             │
-                    ┌────────▼────────┐
-                    │  Train / Val    │
-                    └────────┬────────┘
-                             │
-                    train_yolo_obb.py
-                             │
-                    ┌────────▼────────┐
-                    │  Trained Model  │
-                    │  (best.pt)      │
-                    └────────┬────────┘
-                             │
-                    predict_obb.py
-                             │
-                    ┌────────▼────────┐
-                    │   Predictions   │
-                    └─────────────────┘
-```
-
-## System Requirements
-
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| OS | Windows 10 / Ubuntu 20.04 | Windows 11 / Ubuntu 22.04 |
-| Python | 3.8 | 3.10+ |
-| GPU | NVIDIA GTX 1060 (6GB) | NVIDIA RTX 3060+ (8GB+) |
-| CUDA | 11.7 | 12.1+ |
-| RAM | 8 GB | 16 GB+ |
-| Disk | 5 GB (with model) | 10 GB+ |
-
-> **Note**: CPU-only mode is supported but significantly slower for SAM 3 inference.
-
-## Troubleshooting
-
-### Model not found
-```
-Error: SAM model not found
-```
-**Solution**: Ensure `sam3.pt` is in the project root or Ultralytics cache directory. Or let the tool download it automatically on first run.
-
-### CUDA out of memory
-```
-RuntimeError: CUDA out of memory
-```
-**Solution**: Try a smaller model variant (`sam3_s.pt`) or close other GPU-intensive applications.
-
-### Gradio port conflict
-```
-OSError: [Errno 98] Address already in use
-```
-**Solution**: Another instance may be running. Close it or specify a different port:
-```python
-# In sam3_labeler.py, modify the launch() call:
-demo.launch(server_port=7861)
-```
-
-### GoPro video read issues
-The tool sets `OPENCV_FFMPEG_READ_ATTEMPTS=65536` automatically for multi-stream video compatibility (GoPro, DJI, etc).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[中文使用手冊](docs/USER_MANUAL_zh-TW.md) | [English User Manual](docs/USER_MANUAL_en.md)
 
 ## Acknowledgments
 
-- [Ultralytics](https://github.com/ultralytics/ultralytics) - YOLO and SAM model framework
-- [Meta AI SAM](https://segment-anything.com/) - Segment Anything Model
-- [Gradio](https://www.gradio.app/) - Web UI framework
+This project is supported by the **Ocean Conservation Administration, Ocean Affairs Council** (海洋委員會海洋保育署).
+
+## License
+
+MIT

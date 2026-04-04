@@ -1,26 +1,4 @@
-# SAM 3 Labeler - Dependencies
-# Install: pip install -r requirements.txt
-
-# Core
-numpy>=1.21.0
-opencv-python>=4.5.0
-gradio>=4.0.0
-tqdm>=4.60.0
-
-# Ultralytics (includes SAM 3 model support)
-ultralytics>=8.0.0
-
-# PyTorch (install FIRST, choose your CUDA version)
-# See: https://pytorch.org/get-started/locally/
-#
-# CUDA 11.8:
-#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-#
-# CUDA 12.1:
-#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-#
-# CUDA 12.6:
-#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
-#
-# CPU only:
-#   pip install torch torchvision torchaudio
+PyQt6>=6.6.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+ultralytics>=8.3.237
